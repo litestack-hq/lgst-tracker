@@ -21,7 +21,7 @@ type HandlerOpts struct {
 }
 
 func Handler(opts HandlerOpts) http.Handler {
-	// h := NewHttpModule(opts)
+	h := NewHttpModule(opts)
 	router := chi.NewRouter()
 
 	router.Use(middleware.RealIP)
@@ -44,9 +44,7 @@ func Handler(opts HandlerOpts) http.Handler {
 		})
 	})
 
-	router.Route("/api/v1", func(r chi.Router) {
-		// r.Post("/login", h.Login)
-	})
+	router.Post("/", h.PingHandler)
 
 	chi.Walk(router, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		fmt.Printf("%s %s\n", method, route)
