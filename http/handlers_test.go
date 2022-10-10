@@ -30,10 +30,10 @@ func TestPingHandler(t *testing.T) {
 
 		res := w.Result()
 		responseBytes, err := io.ReadAll(res.Body)
-		defer res.Body.Close()
 		if err != nil {
 			t.Fatal(err)
 		}
+		defer res.Body.Close()
 
 		assert.Nil(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode)
