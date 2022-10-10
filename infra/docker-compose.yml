@@ -15,11 +15,11 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.tracker_dev_secure.entryPoints=websecure
-      - traefik.http.routers.tracker_dev_secure.rule=Host(`-tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_secure.rule=Host(`tracker.dev.wemoov.io`)
       - traefik.http.routers.tracker_dev_secure.priority=3
       - traefik.http.routers.tracker_dev_secure.tls=true
       - traefik.http.routers.tracker_dev_insecure.entryPoints=web
-      - traefik.http.routers.tracker_dev_insecure.rule=Host(`-tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_insecure.rule=Host(`tracker.dev.wemoov.io`)
       - traefik.http.routers.tracker_dev_insecure.priority=3
       - traefik.http.routers.tracker_dev_insecure.middlewares=https_redirection
       - traefik.http.middlewares.https_redirection.redirectscheme.scheme=https
