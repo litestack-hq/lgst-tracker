@@ -1,0 +1,99 @@
+on:
+  push:
+    branches:
+      - main
+jobs:
+  integration:
+    name: CI
+    uses: ./.github/workflows/integration.yml
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+  package:
+    name: Package 📦
+    runs-on: ubuntu-20.04
+    needs: integration
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg lsb-release
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin=2.3.3~ubuntu-focal
+      - name: Login to GHCR
+        env:
+          USERNAME:  ${{ github.actor }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          echo $GH_PAT | docker login ghcr.io -u $USERNAME --password-stdin
+      - name: Install SSH keys
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519.pub
+          chmod 400 ~/.ssh/id_ed25519
+          ssh-add ~/.ssh/id_ed25519
+      - name: SSH Keyscan
+        run: |
+          ssh-keyscan -H wemoov.io >> ~/.ssh/known_hosts
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+      - name: Publish
+        run: |
+          eval "$(ssh-agent -s)" # Start SSH agent
+          ssh-add # Load SSH keys
+          docker buildx build --ssh default=$SSH_AUTH_SOCK . -f ./infra/Dockerfile -t ghcr.io/litestack-hq/lgst-tracker:latest
+          docker image push ghcr.io/litestack-hq/lgst-tracker:latest
+  deploy:
+    name: Deploy 🚀
+    runs-on: ubuntu-20.04
+    needs: package
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install SSH keys
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519.pub
+          chmod 400 ~/.ssh/id_ed25519
+          ssh-add ~/.ssh/id_ed25519
+      - name: Setup Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg lsb-release
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin=2.3.3~ubuntu-focal
+      - name: SSH Keyscan
+        run: |
+          ssh-keyscan -H wemoov.io >> ~/.ssh/known_hosts
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+      - name: Setup Docker context
+        run: |
+          docker context create lgst-1 --docker "host=ssh://root@wemoov.io"
+          docker context use lgst-1
+      - name: Login to GHCR
+        env:
+          USERNAME:  ${{ github.actor }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          echo $GH_PAT | docker login ghcr.io -u $USERNAME --password-stdin
+      - name: Compose Up
+        env:
+          PROJECT_NAME: lgst-tracker
+        run: |
+          docker compose -p "$PROJECT_NAME" --project-directory ./infra/docker-compose pull
+          docker compose -p "$PROJECT_NAME" --project-directory ./infra/docker-compose up -d --remove-orphans
