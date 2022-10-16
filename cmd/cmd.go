@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 
 	app_http "github.com/litestack-hq/lgst-tracker/http"
+	"github.com/litestack-hq/lgst-tracker/sockets"
 )
 
 func Run(conf *config.Config, logger zerolog.Logger) {
@@ -39,13 +40,22 @@ func runApp(conf *config.Config, logger zerolog.Logger) {
 		conf.PORT = port
 	}
 
-	server := http.Server{
+	httpServer := http.Server{
 		Addr: fmt.Sprintf(":%d", conf.PORT),
 		Handler: app_http.Handler(app_http.HandlerOpts{
 			Conf:   conf,
 			Logger: logger,
 		}),
 	}
+
+	pingTcpServer := sockets.ServerOpts{
+		Protocol: "tcp",
+		Port:     "7000",
+		Logger:   logger,
+		Handler:  sockets.DevicePingHandler,
+	}
+
+	sockets.StartListener(pingTcpServer)
 
 	closeChannel := make(chan struct{})
 
@@ -56,7 +66,7 @@ func runApp(conf *config.Config, logger zerolog.Logger) {
 
 		logger.Info().Msg("shutting down")
 
-		if err := server.Shutdown(context.Background()); err != nil {
+		if err := httpServer.Shutdown(context.Background()); err != nil {
 			logger.Info().Err(err).Msg("HTTP server shutdown error")
 		}
 
@@ -65,7 +75,7 @@ func runApp(conf *config.Config, logger zerolog.Logger) {
 
 	logger.Info().Msgf("HTTP server running on port %d", conf.PORT)
 
-	if err := server.ListenAndServe(); err != http.ErrServerClosed {
+	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
 		logger.Panic().Err(err).Msg("HTTP server listen and serve failed")
 	}
 

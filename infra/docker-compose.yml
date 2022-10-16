@@ -14,16 +14,25 @@ services:
       PORT: 5000
     labels:
       - traefik.enable=true
-      - traefik.http.routers.tracker_dev_secure.entryPoints=websecure
-      - traefik.http.routers.tracker_dev_secure.rule=Host(`tracker.dev.wemoov.io`)
-      - traefik.http.routers.tracker_dev_secure.priority=3
-      - traefik.http.routers.tracker_dev_secure.tls=true
-      - traefik.http.routers.tracker_dev_insecure.entryPoints=web
-      - traefik.http.routers.tracker_dev_insecure.rule=Host(`tracker.dev.wemoov.io`)
-      - traefik.http.routers.tracker_dev_insecure.priority=3
-      # - traefik.http.routers.tracker_dev_insecure.middlewares=https_redirection
-      # - traefik.http.middlewares.https_redirection.redirectscheme.scheme=https
       - traefik.http.services.tracker_dev.loadbalancer.server.port=5000
+      - traefik.http.services.tracker_dev_tcp.loadbalancer.server.port=7000
+
+      - traefik.http.routers.tracker_dev_web.entryPoints=web
+      - traefik.http.routers.tracker_dev_web.service=tracker_dev
+      - traefik.http.routers.tracker_dev_web.rule=Host(`tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_web.priority=3
+      - traefik.http.routers.tracker_dev_web.middlewares=https_redirection
+      - traefik.http.middlewares.https_redirection.redirectscheme.scheme=https
+
+      - traefik.http.routers.tracker_dev_websecure.entryPoints=websecure
+      - traefik.http.routers.tracker_dev_websecure.service=tracker_dev
+      - traefik.http.routers.tracker_dev_websecure.tls=true
+      - traefik.http.routers.tracker_dev_websecure.rule=Host(`tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_websecure.priority=3
+
+      - traefik.http.routers.tracker_dev_tcp.entryPoints=tracker
+      - traefik.http.routers.tracker_dev_tcp.rule=Host(`tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_tcp.service=tracker_dev_tcp
     logging:
       driver: fluentd
       options:
