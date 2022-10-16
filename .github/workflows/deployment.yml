@@ -95,5 +95,4 @@ jobs:
         env:
           PROJECT_NAME: lgst-tracker
         run: |
-          docker compose -p "$PROJECT_NAME" --project-directory ./infra/docker-compose pull
-          docker compose -p "$PROJECT_NAME" --project-directory ./infra/docker-compose restart -d --remove-orphans
+          docker compose -p "$PROJECT_NAME" --project-directory ./infra/docker-compose up --pull --detach --remove-orphans
