@@ -44,6 +44,7 @@ func Handler(opts HandlerOpts) http.Handler {
 		})
 	})
 
+	router.Get("/", h.PingHandler)
 	router.Post("/", h.PingHandler)
 
 	chi.Walk(router, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
