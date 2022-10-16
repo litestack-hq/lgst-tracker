@@ -7,7 +7,6 @@ require (
 	github.com/go-chi/httplog v0.2.5
 	github.com/go-chi/render v1.0.2
 	github.com/litestack-hq/lgst-common v0.0.0-20221009145148-f1f3c2a5d5a2
-	github.com/rs/cors v1.8.2
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0

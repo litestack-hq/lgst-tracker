@@ -37,6 +37,6 @@ func TestPingHandler(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode)
-		assert.Equal(t, 0, len(responseBytes))
+		assert.Equal(t, 2, len(responseBytes))
 	})
 }
