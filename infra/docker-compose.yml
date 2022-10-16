@@ -21,8 +21,8 @@ services:
       - traefik.http.routers.tracker_dev_insecure.entryPoints=web
       - traefik.http.routers.tracker_dev_insecure.rule=Host(`tracker.dev.wemoov.io`)
       - traefik.http.routers.tracker_dev_insecure.priority=3
-      - traefik.http.routers.tracker_dev_insecure.middlewares=https_redirection
-      - traefik.http.middlewares.https_redirection.redirectscheme.scheme=https
+      # - traefik.http.routers.tracker_dev_insecure.middlewares=https_redirection
+      # - traefik.http.middlewares.https_redirection.redirectscheme.scheme=https
       - traefik.http.services.tracker_dev.loadbalancer.server.port=5000
     logging:
       driver: fluentd
