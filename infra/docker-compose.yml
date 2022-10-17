@@ -32,6 +32,7 @@ services:
 
       - traefik.tcp.routers.tracker_dev_tcp.entryPoints=tracker
       - traefik.tcp.routers.tracker_dev_tcp.rule=HostSNI(`t.dev.wemoov.io`)
+      - traefik.tcp.routers.tracker_dev_tcp.tls=true
       - traefik.tcp.routers.tracker_dev_tcp.priority=4
       - traefik.tcp.routers.tracker_dev_tcp.service=tracker_dev_tcp
     logging:
