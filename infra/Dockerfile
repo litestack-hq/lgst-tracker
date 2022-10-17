@@ -12,4 +12,5 @@ RUN go build -o .out/app
 FROM debian:buster-slim
 WORKDIR /app
 COPY --from=builder /app/.out .out
+EXPOSE 5000 7000
 CMD ./.out/app

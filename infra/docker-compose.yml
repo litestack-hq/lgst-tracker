@@ -15,7 +15,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.services.tracker_dev.loadbalancer.server.port=5000
-      - traefik.http.services.tracker_dev_tcp.loadbalancer.server.port=7000
+      - traefik.tcp.services.tracker_dev_tcp.loadbalancer.server.port=7000
 
       - traefik.http.routers.tracker_dev_web.entryPoints=web
       - traefik.http.routers.tracker_dev_web.service=tracker_dev
@@ -30,10 +30,10 @@ services:
       - traefik.http.routers.tracker_dev_websecure.rule=HostRegexp(`{subdomain:([a-z]+\.+)?}dev.wemoov.io`) && PathPrefix(`/api/*/tracker`)
       - traefik.http.routers.tracker_dev_websecure.priority=3
 
-      - traefik.http.routers.tracker_dev_tcp.entryPoints=tracker
-      - traefik.http.routers.tracker_dev_tcp.rule=Host(`t.dev.wemoov.io`)
-      - traefik.http.routers.tracker_dev_tcp.priority=4
-      - traefik.http.routers.tracker_dev_tcp.service=tracker_dev_tcp
+      - traefik.tcp.routers.tracker_dev_tcp.entryPoints=tracker
+      - traefik.tcp.routers.tracker_dev_tcp.rule=Host(`t.dev.wemoov.io`)
+      - traefik.tcp.routers.tracker_dev_tcp.priority=4
+      - traefik.tcp.routers.tracker_dev_tcp.service=tracker_dev_tcp
     logging:
       driver: fluentd
       options:
