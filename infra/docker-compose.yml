@@ -19,7 +19,7 @@ services:
 
       - traefik.http.routers.tracker_dev_web.entryPoints=web
       - traefik.http.routers.tracker_dev_web.service=tracker_dev
-      - traefik.http.routers.tracker_dev_web.rule=Host(`tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_web.rule=HostRegexp(`{subdomain:([a-z]+\.+)?}dev.wemoov.io`) && PathPrefix(`/api/*/tracker`)
       - traefik.http.routers.tracker_dev_web.priority=3
       - traefik.http.routers.tracker_dev_web.middlewares=https_redirection
       - traefik.http.middlewares.https_redirection.redirectscheme.scheme=https
@@ -27,11 +27,12 @@ services:
       - traefik.http.routers.tracker_dev_websecure.entryPoints=websecure
       - traefik.http.routers.tracker_dev_websecure.service=tracker_dev
       - traefik.http.routers.tracker_dev_websecure.tls=true
-      - traefik.http.routers.tracker_dev_websecure.rule=Host(`tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_websecure.rule=HostRegexp(`{subdomain:([a-z]+\.+)?}dev.wemoov.io`) && PathPrefix(`/api/*/tracker`)
       - traefik.http.routers.tracker_dev_websecure.priority=3
 
       - traefik.http.routers.tracker_dev_tcp.entryPoints=tracker
-      - traefik.http.routers.tracker_dev_tcp.rule=Host(`tracker.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_tcp.rule=Host(`t.dev.wemoov.io`)
+      - traefik.http.routers.tracker_dev_tcp.priority=3
       - traefik.http.routers.tracker_dev_tcp.service=tracker_dev_tcp
     logging:
       driver: fluentd
