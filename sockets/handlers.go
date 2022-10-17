@@ -18,7 +18,7 @@ func DevicePingHandler(connection net.Conn, opts HandlerOpts) {
 	defer connection.Close()
 
 	for {
-		data, err := bufio.NewReader(connection).ReadString('\n')
+		data, err := bufio.NewReader(connection).ReadString('#')
 		if err != nil {
 			if err.Error() != "EOF" {
 				opts.Logger.Err(err).Msg("failed to read data")
