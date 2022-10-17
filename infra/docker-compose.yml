@@ -32,7 +32,7 @@ services:
 
       - traefik.http.routers.tracker_dev_tcp.entryPoints=tracker
       - traefik.http.routers.tracker_dev_tcp.rule=Host(`t.dev.wemoov.io`)
-      - traefik.http.routers.tracker_dev_tcp.priority=3
+      - traefik.http.routers.tracker_dev_tcp.priority=1
       - traefik.http.routers.tracker_dev_tcp.service=tracker_dev_tcp
     logging:
       driver: fluentd
