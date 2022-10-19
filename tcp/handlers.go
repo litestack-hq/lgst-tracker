@@ -2,6 +2,7 @@ package tcp
 
 import (
 	"bufio"
+	"math"
 	"net"
 	"regexp"
 	"strconv"
@@ -45,13 +46,10 @@ func init() {
 	}
 }
 
-func minsToDeg(min float64) float64 {
-	return min / 60
-}
-
 func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
-	utc, _ := time.LoadLocation("UTC")
 	regexGroups := heartBeatRegex.FindStringSubmatch(data)
+
+	utc, _ := time.LoadLocation("UTC")
 	year, _ := strconv.ParseInt(regexGroups[10][4:6], 10, 64)
 	month, _ := strconv.ParseInt(regexGroups[10][2:4], 10, 64)
 	days, _ := strconv.ParseInt(regexGroups[10][:2], 10, 64)
@@ -76,15 +74,15 @@ func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
 			latSlice := strings.Split(regexGroups[4], ".")
 			degs, _ := strconv.ParseInt(latSlice[0][:len(latSlice[0])-2], 10, 64)
 			mins, _ := strconv.ParseFloat(latSlice[0][len(latSlice[0])-2:]+"."+latSlice[1], 64)
-			mins = minsToDeg(mins)
-			return float64(degs) + mins
+			mins = mins / 60
+			return math.Ceil(((float64(degs) + mins) * 100000) / 100000)
 		}(),
 		Longitude: func() float64 {
 			lgtSlice := strings.Split(regexGroups[6], ".")
 			degs, _ := strconv.ParseInt(lgtSlice[0][:len(lgtSlice[0])-2], 10, 64)
 			mins, _ := strconv.ParseFloat(lgtSlice[0][len(lgtSlice[0])-2:]+"."+lgtSlice[1], 64)
-			mins = minsToDeg(mins)
-			return float64(degs) + mins
+			mins = mins / 60
+			return math.Ceil(((float64(degs) + mins) * 100000) / 100000)
 		}(),
 		Speed: func() float32 {
 			speed, err := strconv.ParseFloat(regexGroups[8], 32)
