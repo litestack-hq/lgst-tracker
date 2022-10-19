@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog"
 
 	app_http "github.com/litestack-hq/lgst-tracker/http"
-	"github.com/litestack-hq/lgst-tracker/sockets"
+	"github.com/litestack-hq/lgst-tracker/tcp"
 )
 
 func Run(conf *config.Config, logger zerolog.Logger) {
@@ -48,14 +48,17 @@ func runApp(conf *config.Config, logger zerolog.Logger) {
 		}),
 	}
 
-	pingTcpServer := sockets.ServerOpts{
-		Protocol: "tcp",
-		Port:     "7000",
-		Logger:   logger,
-		Handler:  sockets.DevicePingHandler,
+	tcpModule := tcp.New(logger)
+
+	devicePingListener := tcp.TcpListener{
+		Name:              "Device ping listener",
+		Protocol:          "tcp",
+		Port:              "7000",
+		Logger:            logger,
+		ConnectionHandler: tcpModule.DevicePingHandler,
 	}
 
-	sockets.StartListener(pingTcpServer)
+	tcp.StartListener(devicePingListener)
 
 	closeChannel := make(chan struct{})
 

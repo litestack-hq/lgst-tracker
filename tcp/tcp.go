@@ -1,4 +1,4 @@
-package sockets
+package tcp
 
 import (
 	"net"
@@ -7,19 +7,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type HandlerOpts struct {
-	Logger zerolog.Logger
+type TcpListener struct {
+	Name              string
+	Protocol          string
+	Port              string
+	Logger            zerolog.Logger
+	ConnectionHandler func(net.Conn)
 }
 
-type ServerOpts struct {
-	Name     string
-	Protocol string
-	Port     string
-	Logger   zerolog.Logger
-	Handler  func(net.Conn, HandlerOpts)
-}
-
-func StartListener(opts ServerOpts) {
+func StartListener(opts TcpListener) {
 	listener, err := net.Listen(opts.Protocol, ":"+opts.Port)
 
 	if err != nil {
@@ -41,8 +37,6 @@ func StartListener(opts ServerOpts) {
 			return
 		}
 
-		go opts.Handler(connection, HandlerOpts{
-			Logger: opts.Logger,
-		})
+		go opts.ConnectionHandler(connection)
 	}
 }
