@@ -48,12 +48,12 @@ func init() {
 func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
 	utc, _ := time.LoadLocation("UTC")
 	regexGroups := heartBeatRegex.FindStringSubmatch(data)
-	year, _ := strconv.ParseInt(regexGroups[9][4:6], 10, 64)
-	month, _ := strconv.ParseInt(regexGroups[9][2:4], 10, 64)
-	days, _ := strconv.ParseInt(regexGroups[9][:2], 10, 64)
-	hours, _ := strconv.ParseInt(regexGroups[1][:2], 10, 64)
-	minutes, _ := strconv.ParseInt(regexGroups[1][2:4], 10, 64)
-	seconds, _ := strconv.ParseInt(regexGroups[1][4:6], 10, 64)
+	year, _ := strconv.ParseInt(regexGroups[10][4:6], 10, 64)
+	month, _ := strconv.ParseInt(regexGroups[10][2:4], 10, 64)
+	days, _ := strconv.ParseInt(regexGroups[10][:2], 10, 64)
+	hours, _ := strconv.ParseInt(regexGroups[2][:2], 10, 64)
+	minutes, _ := strconv.ParseInt(regexGroups[2][2:4], 10, 64)
+	seconds, _ := strconv.ParseInt(regexGroups[2][4:6], 10, 64)
 
 	if year >= 60 {
 		year = 1900 + year
@@ -64,55 +64,55 @@ func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
 	deviceTime := time.Date(int(year), time.Month(month), int(days), int(hours), int(minutes), int(seconds), 0, utc)
 
 	heartBeat := DeviceHeartBeat{
-		DeviceId: regexGroups[0],
+		DeviceId: regexGroups[1],
 		ValidGpsData: func() bool {
-			return strings.ToUpper(regexGroups[2]) == "A"
+			return strings.ToUpper(regexGroups[3]) == "A"
 		}(),
 		Latitude: func() string {
-			return regexGroups[3] + regexGroups[4]
+			return regexGroups[4] + regexGroups[5]
 		}(),
 		Longitude: func() string {
-			return regexGroups[5] + regexGroups[6]
+			return regexGroups[6] + regexGroups[7]
 		}(),
 		Speed: func() float32 {
-			speed, err := strconv.ParseFloat(regexGroups[7], 32)
+			speed, err := strconv.ParseFloat(regexGroups[8], 32)
 			if err != nil {
 				h.Logger.Err(err).Msg("failed to parse speed value")
 			}
 			return float32(speed)
 		}(),
 		AzimuthTrueNorth: func() int {
-			trueNorth, err := strconv.ParseInt(regexGroups[8], 10, 64)
+			trueNorth, err := strconv.ParseInt(regexGroups[9], 10, 64)
 			if err != nil {
 				h.Logger.Err(err).Msg("failed to parse azimuth true north value")
 			}
 			return int(trueNorth)
 		}(),
 		VehicleStatus: func() string {
-			return regexGroups[10]
-		}(),
-		CountryCode: func() string {
 			return regexGroups[11]
 		}(),
+		CountryCode: func() string {
+			return regexGroups[12]
+		}(),
 		OperatorsCount: func() int {
-			operatorCount, err := strconv.ParseInt(regexGroups[12], 10, 64)
+			operatorCount, err := strconv.ParseInt(regexGroups[13], 10, 64)
 			if err != nil {
 				h.Logger.Err(err).Msg("failed to parse operator count value")
 			}
 			return int(operatorCount)
 		}(),
 		BaseStationCount: func() int {
-			baseStationCount, err := strconv.ParseInt(regexGroups[13], 10, 64)
+			baseStationCount, err := strconv.ParseInt(regexGroups[14], 10, 64)
 			if err != nil {
 				h.Logger.Err(err).Msg("failed to parse base station count value")
 			}
 			return int(baseStationCount)
 		}(),
 		DistrictId: func() string {
-			return regexGroups[14]
+			return regexGroups[15]
 		}(),
 		BatteryStatus: func() int16 {
-			bat, err := strconv.ParseInt(regexGroups[15], 10, 64)
+			bat, err := strconv.ParseInt(regexGroups[16], 10, 64)
 			if err != nil {
 				h.Logger.Err(err).Msg("failed to parse battery status value")
 			}
