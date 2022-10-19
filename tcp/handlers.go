@@ -22,8 +22,8 @@ type HandlerOpts struct {
 type DeviceHeartBeat struct {
 	DeviceId         string
 	ValidGpsData     bool
-	Latitude         string
-	Longitude        string
+	Latitude         float64
+	Longitude        float64
 	Speed            float32
 	AzimuthTrueNorth int
 	VehicleStatus    string
@@ -43,6 +43,10 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func minsToDeg(min float64) float64 {
+	return min / 60
 }
 
 func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
@@ -68,11 +72,19 @@ func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
 		ValidGpsData: func() bool {
 			return strings.ToUpper(regexGroups[3]) == "A"
 		}(),
-		Latitude: func() string {
-			return regexGroups[4] + regexGroups[5]
+		Latitude: func() float64 {
+			latSlice := strings.Split(regexGroups[4], ".")
+			degs, _ := strconv.ParseInt(latSlice[0][:len(latSlice[0])-2], 10, 64)
+			mins, _ := strconv.ParseFloat(latSlice[0][len(latSlice[0])-2:]+"."+regexGroups[5], 64)
+			mins = minsToDeg(mins)
+			return float64(degs) + mins
 		}(),
-		Longitude: func() string {
-			return regexGroups[6] + regexGroups[7]
+		Longitude: func() float64 {
+			lgtSlice := strings.Split(regexGroups[6], ".")
+			degs, _ := strconv.ParseInt(lgtSlice[0][:len(lgtSlice[0])-2], 10, 64)
+			mins, _ := strconv.ParseFloat(lgtSlice[0][len(lgtSlice[0])-2:]+"."+regexGroups[7], 64)
+			mins = minsToDeg(mins)
+			return float64(degs) + mins
 		}(),
 		Speed: func() float32 {
 			speed, err := strconv.ParseFloat(regexGroups[8], 32)
@@ -129,7 +141,7 @@ func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
 		h.Logger.Err(err).Msg("TCP write failed")
 	}
 
-	h.Logger.Info().Interface("heart", heartBeat).Interface("response", response).Msg("handle device heartbeat")
+	h.Logger.Info().Interface("heart_beat", heartBeat).Interface("response", response).Msg("handle device heartbeat")
 }
 
 func New(logger zerolog.Logger) *HandlerOpts {
