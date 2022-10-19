@@ -75,14 +75,14 @@ func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
 			degs, _ := strconv.ParseInt(latSlice[0][:len(latSlice[0])-2], 10, 64)
 			mins, _ := strconv.ParseFloat(latSlice[0][len(latSlice[0])-2:]+"."+latSlice[1], 64)
 			mins = mins / 60
-			return math.Ceil(((float64(degs) + mins) * 100000)) / 100000
+			return math.Floor(((float64(degs) + mins) * 100000)) / 100000
 		}(),
 		Longitude: func() float64 {
 			lgtSlice := strings.Split(regexGroups[6], ".")
 			degs, _ := strconv.ParseInt(lgtSlice[0][:len(lgtSlice[0])-2], 10, 64)
 			mins, _ := strconv.ParseFloat(lgtSlice[0][len(lgtSlice[0])-2:]+"."+lgtSlice[1], 64)
 			mins = mins / 60
-			return math.Ceil(((float64(degs) + mins) * 100000)) / 100000
+			return math.Floor(((float64(degs) + mins) * 100000)) / 100000
 		}(),
 		Speed: func() float32 {
 			speed, err := strconv.ParseFloat(regexGroups[8], 32)
