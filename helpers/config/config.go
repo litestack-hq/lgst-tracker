@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	PRINT_HTTP_ROUTES          bool   `mapstructure:"print_http_routes"`
 	APP_NAME                   string `mapstructure:"app_name"`
 	APP_ENV                    string `mapstructure:"app_env"`
 	APP_KEY                    string `mapstructure:"app_key"`
@@ -24,7 +25,7 @@ func New() *Config {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			log.Warn().Msg("failed to read config file")
+			log.Warn().Msg("no config file")
 		}
 	}
 

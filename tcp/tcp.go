@@ -1,42 +1,20 @@
 package tcp
 
-import (
-	"net"
+import "github.com/rs/zerolog"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+const (
+	PROTOCOL_TCP = "tcp"
+	PROTOCOL_UDP = "udp"
 )
 
-type TcpListener struct {
-	Name              string
-	Protocol          string
-	Port              string
-	Logger            zerolog.Logger
-	ConnectionHandler func(net.Conn)
+type ModuleOpts struct {
+	Name        string
+	Protocol    string
+	DefaultPort string
+	Logger      zerolog.Logger
 }
 
-func StartListener(opts TcpListener) {
-	listener, err := net.Listen(opts.Protocol, ":"+opts.Port)
-
-	if err != nil {
-		opts.Logger.Err(err).Msg("failed to start net listener")
-		return
-	}
-
-	opts.Logger.Info().Msgf("%s running on port %s", opts.Name, opts.Port)
-
-	defer func() {
-		err := listener.Close()
-		log.Err(err).Msg("failed to close listener")
-	}()
-
-	for {
-		connection, err := listener.Accept()
-		if err != nil {
-			opts.Logger.Err(err).Msg("failed to accept connection")
-			return
-		}
-
-		go opts.ConnectionHandler(connection)
-	}
+type Module interface {
+	Run()
+	Close() error
 }

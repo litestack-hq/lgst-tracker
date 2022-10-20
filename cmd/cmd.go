@@ -9,6 +9,7 @@ import (
 
 	"github.com/litestack-hq/lgst-common/helpers/utils"
 	"github.com/litestack-hq/lgst-tracker/helpers/config"
+	"github.com/litestack-hq/lgst-tracker/tcp/device_ping_module"
 	"github.com/rs/zerolog"
 
 	app_http "github.com/litestack-hq/lgst-tracker/http"
@@ -30,7 +31,7 @@ func Run(conf *config.Config, logger zerolog.Logger) {
 
 func runApp(conf *config.Config, logger zerolog.Logger) {
 	if conf.PORT == 0 {
-		logger.Info().Msg("HTTP port not configured, generating a random port")
+		logger.Warn().Msg("HTTP port not configured: generating a random port")
 		port, err := utils.GetFreePort()
 
 		if err != nil {
@@ -48,29 +49,30 @@ func runApp(conf *config.Config, logger zerolog.Logger) {
 		}),
 	}
 
-	tcpModule := tcp.New(logger)
-
-	devicePingListener := tcp.TcpListener{
-		Name:              "Device ping listener",
-		Protocol:          "tcp",
-		Port:              "7000",
-		Logger:            logger,
-		ConnectionHandler: tcpModule.DevicePingHandler,
-	}
-
-	tcp.StartListener(devicePingListener)
-
 	closeChannel := make(chan struct{})
+
+	devicePingModule := device_ping_module.New(tcp.ModuleOpts{
+		Name:        "Device ping module",
+		Protocol:    tcp.PROTOCOL_TCP,
+		DefaultPort: "7000",
+		Logger:      logger,
+	})
+
+	go devicePingModule.Run()
 
 	go func() {
 		sigInt := make(chan os.Signal, 1)
 		signal.Notify(sigInt, os.Interrupt)
 		<-sigInt
 
-		logger.Info().Msg("shutting down")
-
+		logger.Info().Msg("shutting down HTTP server")
 		if err := httpServer.Shutdown(context.Background()); err != nil {
-			logger.Info().Err(err).Msg("HTTP server shutdown error")
+			logger.Err(err).Msg("HTTP server shutdown error")
+		}
+
+		logger.Info().Msg("shutting down device ping module")
+		if err := devicePingModule.Close(); err != nil {
+			logger.Err(err).Msg("device ping module shutdown error")
 		}
 
 		close(closeChannel)

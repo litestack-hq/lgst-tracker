@@ -1,24 +1,19 @@
-package tcp
+package device_ping_module
 
 import (
-	"bufio"
 	"math"
 	"net"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/rs/zerolog"
 )
 
 const (
 	DEVICE_HEART_REGEX = `^\*HQ,(\d{10}),V1,(\d{6}),([VA]),(\d+\.\d+),([NS]),(\d+\.\d+),([EW]),(\d+\.\d{2}),(\d{3}),(\d{6}),([A-Z]{8}),(\d{3}),(\d{2}),(\d+),(\d+),([1-6])#$`
 )
 
-type HandlerOpts struct {
-	Logger zerolog.Logger
-}
+var heartBeatRegex *regexp.Regexp
 
 type DeviceHeartBeat struct {
 	DeviceId         string
@@ -36,8 +31,6 @@ type DeviceHeartBeat struct {
 	DeviceTime       time.Time
 }
 
-var heartBeatRegex *regexp.Regexp
-
 func init() {
 	var err error
 	heartBeatRegex, err = regexp.Compile(DEVICE_HEART_REGEX)
@@ -46,7 +39,7 @@ func init() {
 	}
 }
 
-func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
+func (h *devicePingModule) handleHeartBeat(data string, conn net.Conn) {
 	regexGroups := heartBeatRegex.FindStringSubmatch(data)
 
 	utc, _ := time.LoadLocation("UTC")
@@ -140,31 +133,4 @@ func (h *HandlerOpts) handleHeartBeat(data string, conn net.Conn) {
 	}
 
 	h.Logger.Info().Interface("heart_beat", heartBeat).Interface("response", response).Msg("handle device heartbeat")
-}
-
-func New(logger zerolog.Logger) *HandlerOpts {
-	return &HandlerOpts{
-		Logger: logger,
-	}
-}
-
-func (h *HandlerOpts) DevicePingHandler(conn net.Conn) {
-	defer conn.Close()
-
-	for {
-		data, err := bufio.NewReader(conn).ReadString('#')
-		if heartBeatRegex.MatchString(data) {
-			h.handleHeartBeat(data, conn)
-			return
-		}
-
-		if err != nil {
-			if err.Error() != "EOF" {
-				h.Logger.Err(err).Msg("failed to read data")
-			}
-			return
-		}
-
-		h.Logger.Info().Str("data", data).Msg("device data")
-	}
 }

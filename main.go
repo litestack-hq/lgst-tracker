@@ -19,7 +19,7 @@ func main() {
 
 func setupLogger(serviceName string, env string) zerolog.Logger {
 	logger := zerolog.New(os.Stdout).With().Timestamp()
-	logger = logger.Str("service-name", serviceName)
+	logger = logger.Str("name", serviceName)
 
 	if strings.ToLower(env) == "production" {
 		zerolog.SetGlobalLevel(zerolog.WarnLevel)

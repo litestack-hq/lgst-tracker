@@ -46,10 +46,12 @@ func Handler(opts HandlerOpts) http.Handler {
 
 	router.Get("/", h.PingHandler)
 
-	chi.Walk(router, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		fmt.Printf("%s %s\n", method, route)
-		return nil
-	})
+	if opts.Conf.PRINT_HTTP_ROUTES {
+		chi.Walk(router, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+			fmt.Printf("%s %s\n", method, route)
+			return nil
+		})
+	}
 
 	return router
 }
