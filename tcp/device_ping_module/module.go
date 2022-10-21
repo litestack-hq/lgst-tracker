@@ -15,7 +15,6 @@ type devicePingModule struct {
 	DefaultPort string
 	Logger      zerolog.Logger
 	Listener    net.Listener
-	// ConnectionClosed bool
 }
 
 func New(opts tcp.ModuleOpts) tcp.Module {

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DEVICE_HEART_REGEX = `^\*HQ,(\d{10}),V1,(\d{6}),([VA]),(\d+\.\d+),([NS]),(\d+\.\d+),([EW]),(\d+\.\d{2}),(\d{3}),(\d{6}),([A-Z]{8}),(\d{3}),(\d{2}),(\d+),(\d+),([1-6])#$`
+	DEVICE_HEARTBEAT_REGEX = `^\*HQ,(\d{10}),V1,(\d{6}),([VA]),(\d+\.\d+),([NS]),(\d+\.\d+),([EW]),(\d+\.\d{2}),(\d{3}),(\d{6}),([A-Z]{8}),(\d{3}),(\d{2}),(\d+),(\d+),([1-6])#$`
 )
 
 var heartBeatRegex *regexp.Regexp
@@ -33,7 +33,7 @@ type DeviceHeartBeat struct {
 
 func init() {
 	var err error
-	heartBeatRegex, err = regexp.Compile(DEVICE_HEART_REGEX)
+	heartBeatRegex, err = regexp.Compile(DEVICE_HEARTBEAT_REGEX)
 	if err != nil {
 		panic(err)
 	}

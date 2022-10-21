@@ -11,42 +11,37 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// Test that New works
-// Test that run works
-// Test that connects are accepted
-// test that the heartbeat handler is called
-
-var port int
-var logger zerolog.Logger
-var module tcp.Module
+var testPort int
+var testLogger zerolog.Logger
+var testModule tcp.Module
 
 func TestMain(m *testing.M) {
 	var err error
-	logger = zerolog.New(os.Stdout)
-	port, err = utils.GetFreePort()
+	testLogger = zerolog.New(os.Stdout)
+	testPort, err = utils.GetFreePort()
 	if err != nil {
-		logger.Panic().Err(err).Msg("get free port failed")
+		testLogger.Panic().Err(err).Msg("get free port failed")
 	}
 
-	module = New(tcp.ModuleOpts{
+	testModule = New(tcp.ModuleOpts{
 		Name:        "Test device ping module",
 		Protocol:    tcp.PROTOCOL_TCP,
-		DefaultPort: fmt.Sprintf("%d", port),
-		Logger:      logger,
+		DefaultPort: fmt.Sprintf("%d", testPort),
+		Logger:      testLogger,
 	})
 
-	go module.Run()
+	go testModule.Run()
 
 	m.Run()
 
-	err = module.Close()
+	err = testModule.Close()
 	if err != nil {
-		logger.Panic().Err(err).Msg("failed to close TCP listener")
+		testLogger.Panic().Err(err).Msg("failed to close TCP listener")
 	}
 }
 
 func TestTcpConnection(t *testing.T) {
-	url := fmt.Sprintf("0.0.0.0:%d", port)
+	url := fmt.Sprintf("0.0.0.0:%d", testPort)
 	addr, err := net.ResolveTCPAddr(tcp.PROTOCOL_TCP, url)
 	if err != nil {
 		t.Error(err)
